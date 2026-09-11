@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8" />
+<title>Donat yuborish</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #0f0f14;
+    color: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+  }
+  form {
+    background: #1a1a22;
+    padding: 32px;
+    border-radius: 16px;
+    width: 320px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  h2 { margin-top: 0; text-align: center; }
+  label { display: block; margin: 14px 0 6px; font-size: 14px; color: #aaa; }
+  input, textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #101018;
+    color: white;
+    box-sizing: border-box;
+    font-size: 15px;
+  }
+  button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #ff6a00, #ee0979);
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  #status { margin-top: 12px; text-align: center; font-size: 14px; }
+  .note { font-size: 12px; color: #777; margin-top: 16px; text-align: center; }
+</style>
+</head>
+<body>
+
+<div style="background:#1a1a22; padding:32px; border-radius:16px;">
+  <h2>💸 Donat yuborish</h2>
+
+  <p style="text-align:center; font-size:15px; color:#ddd;">
+    Avval pulni quyidagi kartaga o'tkazing:
+  </p>
+  <p style="text-align:center; font-size:22px; font-weight:700; letter-spacing:1px; color:#4ade80;">
+    9860 1666 5653 9565
+  </p>
+  <p style="text-align:center; font-size:14px; color:#aaa; margin-bottom:20px;">
+    F.I.Sh: Streamer Ismi
+  </p>
+
+  <form id="donate-form">
+    <label>Ismingiz</label>
+    <input type="text" id="name" required maxlength="40" placeholder="Ismingiz" />
+
+    <label>Summa (so'm)</label>
+    <input type="number" id="amount" required min="1000" placeholder="10000" />
+
+    <label>Xabar (ixtiyoriy)</label>
+    <textarea id="message" maxlength="200" rows="3" placeholder="Streamerga xabar..."></textarea>
+
+    <button type="submit">Yuborish</button>
+    <div id="status"></div>
+  </form>
+
+  <div class="note">
+    Pul o'tkazgandan so'ng shu formani to'ldiring. Xabaringiz avval
+    streamerga tasdiqlash uchun boradi, u pul tushganini ko'rgach
+    ekranga chiqadi.
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById("donate-form");
+  const status = document.getElementById("status");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    status.textContent = "Yuborilmoqda...";
+
+    const payload = {
+      name: document.getElementById("name").value,
+      amount: document.getElementById("amount").value,
+      message: document.getElementById("message").value,
+    };
+
+    try {
+      const res = await fetch("/api/pending", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        status.textContent = "✅ Yuborildi! Streamer tasdiqlagach ekranga chiqadi.";
+        form.reset();
+      } else {
+        status.textContent = "❌ Xatolik: " + (data.error || "noma'lum");
+      }
+    } catch (err) {
+      status.textContent = "❌ Server bilan bog'lanib bo'lmadi";
+    }
+  });
+</script>
+
+</body>
+</html>

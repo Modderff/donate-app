@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8" />
+<title>Donat Overlay</title>
+<style>
+  /* OBS uchun fon shaffof qoladi */
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    font-family: "Segoe UI", Arial, sans-serif;
+    overflow: hidden;
+  }
+
+  #alert-box {
+    position: fixed;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-150%);
+    min-width: 360px;
+    max-width: 520px;
+    padding: 20px 28px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #ff6a00, #ee0979);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    color: white;
+    text-align: center;
+    transition: transform 0.5s cubic-bezier(.17,.89,.32,1.28);
+  }
+
+  #alert-box.show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  #alert-name {
+    font-size: 26px;
+    font-weight: 700;
+  }
+
+  #alert-amount {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 4px 0;
+  }
+
+  #alert-message {
+    font-size: 16px;
+    opacity: 0.95;
+    margin-top: 6px;
+    word-break: break-word;
+  }
+</style>
+</head>
+<body>
+
+<div id="alert-box">
+  <div id="alert-name"></div>
+  <div id="alert-amount"></div>
+  <div id="alert-message"></div>
+</div>
+
+<audio id="donate-sound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  const box = document.getElementById("alert-box");
+  const nameEl = document.getElementById("alert-name");
+  const amountEl = document.getElementById("alert-amount");
+  const msgEl = document.getElementById("alert-message");
+  const sound = document.getElementById("donate-sound");
+
+  let queue = [];
+  let showing = false;
+
+  socket.on("new-donation", (donation) => {
+    queue.push(donation);
+    playNext();
+  });
+
+  function playNext() {
+    if (showing || queue.length === 0) return;
+    showing = true;
+    const donation = queue.shift();
+
+    nameEl.textContent = donation.name;
+    amountEl.textContent = `${donation.amount.toLocaleString()} so'm donat qildi!`;
+    msgEl.textContent = donation.message || "";
+
+    box.classList.add("show");
+    sound.currentTime = 0;
+    sound.play().catch(() => {});
+
+    setTimeout(() => {
+      box.classList.remove("show");
+      setTimeout(() => {
+        showing = false;
+        playNext();
+      }, 600);
+    }, 5000);
+  }
+</script>
+
+</body>
+</html>
